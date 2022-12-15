@@ -1,49 +1,45 @@
 from chess.exceptions.errors import GoOutOfBoardError
-from chess.figures import Chessman
-
-
-class ChessField:
-    def __init__(self, pos: str):
-        self._pos = pos
-        self._figure: Chessman | None = None
-
-    @property
-    def row(self) -> str:
-        return self._pos[0]
-
-    @property
-    def col(self) -> int:
-        return int(self._pos[1])
-
-    def set_figure(self, figure: Chessman) -> None:
-        self._figure = figure
-
-    def drop_figure(self) -> None:
-        self._figure = None
-
-    def is_busy(self) -> Chessman | None:
-        return self._figure
-
-    def __repr__(self) -> str:
-        return self._pos
-
-    def __str__(self) -> str:
-        return self.__repr__()
+from chess.figures.chessman import ChessField
+from chess.moves import ChessMove
 
 
 class Board:
     _BOARD_SIZE_NUMBER = 8
+    SMBLS: str = "abcdefgh"
 
     def __init__(self):
-        self._board = {}
+        """Создание шахматной доски.
 
-        for a in range(ord('a'), ord('h')):
+        В словарь добавляется 64 клетки.
+        """
+        self._board: dict[str, ChessField] = {}
+        self._moves: list[ChessMove] = []
+
+        for a in self.SMBLS:
             for n in range(self._BOARD_SIZE_NUMBER):
-                pos = f"{chr(a)}{n + 1}"
+                pos = f"{a}{n + 1}"
                 self._board[pos] = ChessField(pos=pos)
 
+    @property
+    def moves(self) -> list[ChessMove]:
+        return self._moves
+
+    def print_moves(self):
+        print("======= Начало партии =======")
+        for move in self._moves:
+            print(move)
+        print("======= Партия завершена =======")
+
+    def add_move(self, move: ChessMove) -> None:
+        self._moves.append(move)
+
     def get_field(self, field: str) -> ChessField:
-        n = int(field[1])
-        if n > self._BOARD_SIZE_NUMBER:
+        """Получение клетки по её нотации [a-h][1-8]."""
+        if len(field) != 2:
             raise GoOutOfBoardError()
+
+        n = int(field[1])
+        if n > self._BOARD_SIZE_NUMBER or n < 1:
+            raise GoOutOfBoardError()
+
         return self._board[field]

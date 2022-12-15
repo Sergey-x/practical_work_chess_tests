@@ -1,6 +1,5 @@
-from .board import Board, ChessField
+from .board import Board
 
 __all__ = (
     "Board",
-    "ChessField",
 )

@@ -3,7 +3,9 @@ import pytest
 from chess.board.board import Board
 from chess.enums.chessman_side import ChessmanSide
 from chess.enums.chessman_types import ChessmanType
-from chess.exceptions.common import PromotionToKingException, InvalidStepException, PromotionOnBadLineException
+from chess.exceptions.errors import KingCaptureError
+from chess.exceptions.exceptions import PromotionToKingException, InvalidStepException, PromotionOnBadLineException
+from chess.figures.king import King
 from chess.figures.knight import Knight
 from chess.figures.pawn import Pawn
 
@@ -64,11 +66,20 @@ class TestPawn:
 
     def test_passent(self, board: Board):
         """Взятие на проходе."""
-        pass
 
-    def test_passent_over_steps(self, board: Board):
-        """Взятие на проходе через несколько ходов."""
-        pass
+        e5 = board.get_field("e5")
+        d5 = board.get_field("d5")
+        d6 = board.get_field("d6")
+        d7 = board.get_field("d7")
+        white_pawn: Pawn = Pawn(chess_field=e5)
+        black_pawn: Pawn = Pawn(chess_field=d7)
+        black_pawn.go_to_position(position=d5, board=board)
+        # white_pawn.passent(d6)
+
+    #
+    # def test_passent_over_steps(self, board: Board):
+    #     """Взятие на проходе через несколько ходов."""
+    #     pass
 
     def test_capture(self, board: Board):
         """Взятие фигуры противника."""
@@ -79,10 +90,27 @@ class TestPawn:
         # съедаем черного коня пешкой
         white_pawn.go_to_position(e4, board=board)
 
+    def test_bad_capture(self, board: Board):
+        """Взятие фигуры противника перед пешкой."""
+        d3 = board.get_field("d3")
+        d4 = board.get_field("d4")
+        white_pawn = Pawn(chess_field=d3)
+        _black_pawn = Pawn(chess_field=d4, chessman_side=ChessmanSide.BLACK)
+        # попытаемся взять чужую пешку ходом вперед
+        with pytest.raises(InvalidStepException):
+            white_pawn.go_to_position(d4, board=board)
+
     def test_king_capture(self, board: Board):
         """Взятие короля противника."""
-        pass
+        d3 = board.get_field("d3")
+        c2 = board.get_field("c2")
 
-    def test_step_with_exposing_king(self, board: Board):
-        """Ход с открытием своего короля для шаха."""
-        pass
+        _black_king: King = King(chess_field=d3)
+        white_pawn: Pawn = Pawn(chess_field=c2)
+        with pytest.raises(KingCaptureError):
+            white_pawn.go_to_position(d3, board=board)
+
+    #
+    # def test_step_with_exposing_king(self, board: Board):
+    #     """Ход с открытием своего короля для шаха."""
+    #     pass
