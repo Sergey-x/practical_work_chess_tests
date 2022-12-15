@@ -1,6 +1,7 @@
 from chess.enums import ChessmanSide, ChessmanType
 from .chessman import Chessman, ChessField
-from ..exceptions.exceptions import PromotionToKingException, PromotionOnBadLineException, InvalidStepException
+from ..exceptions.exceptions import PromotionToKingException, PromotionOnBadLineException, InvalidStepException, \
+    InvalidPassentException, ExpiredPassentException
 
 
 class Pawn(Chessman):
@@ -55,6 +56,20 @@ class Pawn(Chessman):
 
         self._chessman_type = chessman_type
 
-    def passent(self, target_pos: ChessField):
+    def passent(self, target_pos: ChessField, board):
         """Взятие на проходе."""
-        pass
+        # проверяем, что пешка противника существует
+        target_pawn_pos: ChessField = board.get_field(f"{target_pos.col}{self.chess_field.row}")
+        target_pawn: Chessman = target_pawn_pos.is_busy()
+
+        if target_pawn is None:
+            raise InvalidPassentException()
+
+        last_step = board.moves[-1]
+        if last_step.figure != target_pawn.chessman_type or abs(last_step.end.row - last_step.start.row) != 2:
+            raise ExpiredPassentException()
+
+        self.go_to_position(position=target_pos, board=board)
+        target_pawn._chess_field = None
+        target_pawn_pos.drop_figure()
+

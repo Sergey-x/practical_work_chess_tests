@@ -26,8 +26,8 @@ class Board:
 
     def print_moves(self):
         print("======= Начало партии =======")
-        for move in self._moves:
-            print(move)
+        for idx, move in enumerate(self._moves):
+            print(str(idx + 1) + ". " + str(move))
         print("======= Партия завершена =======")
 
     def add_move(self, move: ChessMove) -> None:

@@ -10,6 +10,18 @@ class InvalidPromotionException(BaseChessException):
     pass
 
 
+class BasePassentException(BaseChessException):
+    pass
+
+
+class InvalidPassentException(BasePassentException):
+    pass
+
+
+class ExpiredPassentException(BasePassentException):
+    pass
+
+
 class CaptureKingException(InvalidStepException):
     """Попытка взятия короля."""
     pass

@@ -25,13 +25,16 @@ class Chessman(BaseChessman, abc.ABC):
                  chessman_side: ChessmanSide = ChessmanSide.WHITE):
         self._chessman_type: ChessmanType = chessman_type
         self._chessman_side: ChessmanSide = chessman_side
-        self._is_active: bool = True
         self._chess_field: ChessField = chess_field
         self._chess_field.set_figure(figure=self)
 
     @property
     def chess_field(self) -> ChessField:
         return self._chess_field
+
+    @property
+    def chessman_type(self) -> ChessmanType:
+        return self._chessman_type
 
     def get_position(self) -> ChessField:
         return self._chess_field
@@ -54,7 +57,6 @@ class Chessman(BaseChessman, abc.ABC):
             if captured_figure._chessman_type == ChessmanType.KING:
                 raise KingCaptureError()
 
-            captured_figure._is_active = False
             move_type = ChessMoveTypes.CAPTURE
 
         # заносим ход в историю партии
@@ -70,6 +72,11 @@ class Chessman(BaseChessman, abc.ABC):
 
         # ставим фигуру в клетку
         self._chess_field = position
+        self._chess_field.set_figure(self)
+
+        print("--------")
+        print(f"{self._chess_field=}")
+        print("--------")
 
     def __str__(self) -> str:
         return self._chessman_type

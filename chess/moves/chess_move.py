@@ -10,25 +10,33 @@ class ChessMove:
             figure,
             start,
             end,
-            move_number: int = 1,
     ):
-        self._move_number = move_number
         self._move_type = move_type
         self._figure: ChessmanType = figure
         self._start = start
         self._end = end
 
+    @property
+    def figure(self):
+        return self._figure
+
+    @property
+    def start(self):
+        return self._start
+
+    @property
+    def end(self):
+        return self._end
+
     def __repr__(self) -> str:
         if self._move_type in (ChessMoveTypes.EMPTY_STEP, ChessMoveTypes.CAPTURE):
             return "".join((
-                str(self._move_number),
-                ". ",
                 ChessMoveNotation[str(self._figure.value)],
                 str(self._start),
                 str(self._move_type.value),
                 str(self._end),
             ))
-        return str(self._move_number) + ". " + str(self._move_type.value)
+        return str(self._move_type.value)
 
     def __str__(self) -> str:
         return self.__repr__()

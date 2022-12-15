@@ -4,7 +4,8 @@ from chess.board.board import Board
 from chess.enums.chessman_side import ChessmanSide
 from chess.enums.chessman_types import ChessmanType
 from chess.exceptions.errors import KingCaptureError
-from chess.exceptions.exceptions import PromotionToKingException, InvalidStepException, PromotionOnBadLineException
+from chess.exceptions.exceptions import PromotionToKingException, InvalidStepException, PromotionOnBadLineException, \
+    InvalidPassentException, ExpiredPassentException
 from chess.figures.king import King
 from chess.figures.knight import Knight
 from chess.figures.pawn import Pawn
@@ -64,22 +65,55 @@ class TestPawn:
         with pytest.raises(PromotionOnBadLineException):
             white_pawn.promote(ChessmanType.PAWN)
 
-    def test_passent(self, board: Board):
-        """Взятие на проходе."""
+    def test_try_bad_passent(self, board: Board):
+        """Взятие на проходе без пешки противника."""
+        e5 = board.get_field("e5")
+        d6 = board.get_field("d6")
+        white_pawn: Pawn = Pawn(chess_field=e5)
+        with pytest.raises(InvalidPassentException):
+            white_pawn.passent(d6, board=board)
 
+    def test_expired_passent(self, board: Board):
+        """Опоздалое взятие на проходе."""
+        # используемые поля
+        a2 = board.get_field("a2")
+        a3 = board.get_field("a3")
         e5 = board.get_field("e5")
         d5 = board.get_field("d5")
         d6 = board.get_field("d6")
         d7 = board.get_field("d7")
-        white_pawn: Pawn = Pawn(chess_field=e5)
-        black_pawn: Pawn = Pawn(chess_field=d7)
-        black_pawn.go_to_position(position=d5, board=board)
-        # white_pawn.passent(d6)
 
-    #
-    # def test_passent_over_steps(self, board: Board):
-    #     """Взятие на проходе через несколько ходов."""
-    #     pass
+        # поставим пешки
+        white_pawn: Pawn = Pawn(chess_field=e5)
+        white_pawn2: Pawn = Pawn(chess_field=a2)
+        black_pawn: Pawn = Pawn(chess_field=d7, chessman_side=ChessmanSide.BLACK)
+        # ход черных, можно взять черную пеку на проходе
+        black_pawn.go_to_position(position=d5, board=board)
+        # упускаем возможность взять пешку
+        white_pawn2.go_to_position(position=a3, board=board)
+        # опоздалое "поедание"
+        with pytest.raises(ExpiredPassentException):
+            white_pawn.passent(d6, board=board)
+
+    def test_good_passent(self, board: Board):
+        """Успешное взятие на проходе."""
+
+        # используемые поля
+        e5 = board.get_field("e5")
+        d5 = board.get_field("d5")
+        d6 = board.get_field("d6")
+        d7 = board.get_field("d7")
+
+        # поставим пешки
+        white_pawn: Pawn = Pawn(chess_field=e5)
+        black_pawn: Pawn = Pawn(chess_field=d7, chessman_side=ChessmanSide.BLACK)
+
+        # ход черных, можно взять черную пеку на проходе
+        black_pawn.go_to_position(position=d5, board=board)
+
+        # выполняем взятие на проходе
+        white_pawn.passent(d6, board=board)
+        assert d7.is_busy() is None
 
     def test_capture(self, board: Board):
         """Взятие фигуры противника."""
@@ -110,7 +144,6 @@ class TestPawn:
         with pytest.raises(KingCaptureError):
             white_pawn.go_to_position(d3, board=board)
 
-    #
     # def test_step_with_exposing_king(self, board: Board):
     #     """Ход с открытием своего короля для шаха."""
     #     pass
